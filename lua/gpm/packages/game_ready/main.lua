@@ -14,15 +14,13 @@ function isReady()
     return Ready
 end
 
-do
-    local unpack = unpack
-    local ipairs = ipairs
+local unpack = unpack
+local ipairs = ipairs
 
-    local function runQueue()
-        for num, tbl in ipairs( waitingFuncs ) do
-            table.remove( waitingFuncs, num )
-            tbl[1]( unpack( tbl[2] ) )
-        end
+local function runQueue()
+    for num, tbl in ipairs( waitingFuncs ) do
+        table.remove( waitingFuncs, num )
+        tbl[1]( unpack( tbl[2] ) )
     end
 end
 
