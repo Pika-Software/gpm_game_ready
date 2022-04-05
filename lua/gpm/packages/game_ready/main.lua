@@ -1,9 +1,8 @@
 module( "game_ready", package.seeall )
 
 local Ready = false
-
 function isReady()
-    return Ready
+    return Ready == true
 end
 
 do
@@ -14,12 +13,17 @@ do
 
         local unpack = unpack
         local ipairs = ipairs
+        local pcall = pcall
 
-        function runQueue()
+        function ready()
+            Ready = true
+
             for num, tbl in ipairs( waitingFuncs ) do
-                table.remove( waitingFuncs, num )
                 pcall( tbl[1], unpack( tbl[2] ) )
+                table.remove( waitingFuncs, num )
             end
+
+            timer.Remove( "gpm_game_ready" )
         end
 
     end
@@ -27,73 +31,66 @@ do
     do
 
         local table_insert = table.insert
+        local timer_Create = timer.Create
+
         function wait( func, ... )
-            if Ready then
-                func( ... )
-                runQueue()
+            if (Ready) then
+                return func( ... )
             else
                 table_insert( waitingFuncs, { func, { ... } } )
+                timer_Create( "gpm_game_ready", 1, 0, ready )
             end
         end
 
+        run = wait
+
     end
 
 end
 
-function run( func )
-    if Ready then
-        return func()
-    else
-        wait( func )
-    end
-end
+if (CLIENT) then
 
-function ready()
-    Ready = true
-    runQueue()
+    local LocalPlayer = LocalPlayer
+    local IsValid = IsValid
 
-    timer.Create( "gpm_game_ready", 60, 0, runQueue )
-end
-
-if CLIENT then
-
-    do
-
-        local LocalPlayer = LocalPlayer
-        hook.Add("ShutDown", "Game Ready:PlayerDisconnected", function()
-            hook.Remove("ShutDown", "Game Ready:PlayerDisconnected")
-
-            local ply = LocalPlayer()
-            if IsValid( ply ) then
-                hook.Run( "PlayerDisconnected", ply )
-            end
-        end)
-
-        hook.Add("RenderScene", "Game Ready:PlayerInitialized", function()
+    -- PlayerInitialized Client Side
+    hook.Add("RenderScene", "Game Ready:PlayerInitialized", function()
+        local ply = LocalPlayer()
+        if IsValid( ply ) then
             hook.Remove( "RenderScene", "Game Ready:PlayerInitialized" )
-
-            local ply = LocalPlayer()
-            ply["Initialized"] = true
+            ply.Initialized = true
             ready()
 
-            hook.Run("PlayerInitialized", ply)
-        end)
+            hook.Run( "PlayerInitialized", ply )
+        end
+    end)
 
-    end
+    -- PlayerDisconnected Client Side
+    hook.Add("ShutDown", "Game Ready:PlayerDisconnected", function()
+        hook.Remove("ShutDown", "Game Ready:PlayerDisconnected")
 
-else
+        local ply = LocalPlayer()
+        if IsValid( ply ) then
+            hook.Run( "PlayerDisconnected", ply )
+        end
+    end)
 
+end
+
+if (SERVER) then
+
+    -- PlayerInitialized Server Side
     hook.Add("PlayerInitialSpawn", "Game Ready:PlayerInitialized", function( ply )
         hook.Add("SetupMove", ply, function( self, ply, mv, cmd )
             if (self == ply) and not cmd:IsForced() then
                 hook.Remove( "SetupMove", self )
-                self["Initialized"] = true
-
+                self.Initialized = true
                 hook.Run( "PlayerInitialized", self )
             end
         end)
     end)
 
-    timer.Simple(0, ready)
+    -- Server Side Final Init
+    timer.Simple( 3, ready )
 
 end
