@@ -16,6 +16,7 @@ do
         local pcall = pcall
 
         function ready()
+            hook.Run( "PreGameReady" )
             Ready = true
 
             for num, tbl in ipairs( waitingFuncs ) do
@@ -24,21 +25,19 @@ do
             end
 
             timer.Remove( "gpm_game_ready" )
+            hook.Run( "GameReady" )
         end
 
     end
 
     do
 
-        local table_insert = table.insert
-        local timer_Create = timer.Create
-
         function wait( func, ... )
             if (Ready) then
                 return func( ... )
             else
-                table_insert( waitingFuncs, { func, { ... } } )
-                timer_Create( "gpm_game_ready", 1, 0, ready )
+                table.insert( waitingFuncs, { func, { ... } } )
+                timer.Create( "gpm_game_ready", 1, 0, ready )
             end
         end
 
@@ -54,15 +53,17 @@ if (CLIENT) then
     local IsValid = IsValid
 
     -- PlayerInitialized Client Side
-    hook.Add("RenderScene", "Game Ready:PlayerInitialized", function()
-        local ply = LocalPlayer()
-        if IsValid( ply ) then
-            hook.Remove( "RenderScene", "Game Ready:PlayerInitialized" )
-            ply.Initialized = true
-            ready()
+    timer.Simple(0, function()
+        hook.Add("RenderScene", "Game Ready:PlayerInitialized", function()
+            local ply = LocalPlayer()
+            if IsValid( ply ) then
+                hook.Remove( "RenderScene", "Game Ready:PlayerInitialized" )
+                ply.Initialized = true
+                ready()
 
-            hook.Run( "PlayerInitialized", ply )
-        end
+                hook.Run( "PlayerInitialized", ply )
+            end
+        end)
     end)
 
     -- PlayerDisconnected Client Side
