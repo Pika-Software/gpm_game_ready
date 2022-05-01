@@ -38,8 +38,6 @@ do
             end
         end
 
-        run = wait
-
     end
 
 end
