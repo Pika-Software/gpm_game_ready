@@ -15,6 +15,7 @@ do
         local pairs = pairs
         local pcall = pcall
 
+        -- Don't touch!
         function ready()
             hook.Run( "PreGameReady" )
             Ready = true
@@ -30,6 +31,7 @@ do
 
     do
 
+        -- Run function after game is begins ready
         function wait( func, ... )
             if (Ready) then
                 return func( ... )
@@ -37,6 +39,9 @@ do
                 table.insert( waitingFuncs, { func, { ... } } )
             end
         end
+
+        -- Alias for wait
+        run = wait
 
     end
 
