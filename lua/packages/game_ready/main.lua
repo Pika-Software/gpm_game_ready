@@ -93,3 +93,11 @@ if (SERVER) then
     timer.Simple( 0, ready )
 
 end
+
+-- PLAYER:IsInitialized()
+do
+    local PLAYER = FindMetaTable( "Player" )
+    function PLAYER:IsInitialized()
+        return self.Initialized or false
+    end
+end
