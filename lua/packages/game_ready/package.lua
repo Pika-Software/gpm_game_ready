@@ -1,5 +1,6 @@
-name = "Game Ready"
-description = "A small package for convenient work with methods that require a full loaded game."
-version = "1.4.1"
-author = "PrikolMen:-b"
-license = "MIT"
+Name = "Game Ready"
+Description = "A small package for convenient work with methods that require a full loaded game."
+
+Author = "PrikolMen:-b"
+Version = "1.4.1"
+License = "MIT"
