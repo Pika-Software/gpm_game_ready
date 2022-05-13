@@ -1,3 +1,18 @@
+/*
+    Functions:
+        `boolean` PLAYER:IsInitialized() - Returns `true` if player fully initialized on server
+        game_ready.wait( `function` func, varang ) - Run function after game is begins ready
+        game_ready.run( `function` func, varang ) - Run function after game is begins ready
+        game_ready.ready() - Force game_ready launch
+
+    Hooks:
+        GM:PlayerInitialized( ply ) - Runs after player fully loaded on server
+        GM:PreGameReady() - Starts earlier `GM:OnGameReady()`
+        GM:OnGameReady() - Runs after game is ready
+
+        Client:
+            GM:PlayerDisconnected( ply ) - Runs on leave from server
+*/
 module( "game_ready", package.seeall )
 
 local Ready = false
@@ -24,14 +39,13 @@ do
                 pcall( tbl[1], unpack( tbl[2] ) )
             end
 
-            hook.Run( "GameReady" )
+            hook.Run( "OnGameReady" )
         end
 
     end
 
     do
 
-        -- Run function after game is begins ready
         function wait( func, ... )
             if (Ready) then
                 return func( ... )
@@ -94,10 +108,15 @@ if (SERVER) then
 
 end
 
--- PLAYER:IsInitialized()
+/*
+    Functions:
+        PLAYER:IsInitialized() - returns `true` if player is initialized
+*/
 do
     local PLAYER = FindMetaTable( "Player" )
-    function PLAYER:IsInitialized()
-        return self.Initialized or false
+    if (PLAYER ~= nil) then
+        function PLAYER:IsInitialized()
+            return self.Initialized or false
+        end
     end
 end
