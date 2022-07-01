@@ -26,9 +26,9 @@ do
 
     do
 
+        local isfunction = isfunction
         local unpack = unpack
         local pairs = pairs
-        local pcall = pcall
 
         -- Don't touch!
         function ready()
@@ -36,7 +36,10 @@ do
             Ready = true
 
             for num, tbl in pairs( waitingFuncs ) do
-                pcall( tbl[1], unpack( tbl[2] ) )
+                local callback = tbl[1]
+                if isfunction( callback ) then
+                    callback( unpack( tbl[2] ) )
+                end
             end
 
             hook.Run( "OnGameReady" )
