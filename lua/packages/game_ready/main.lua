@@ -15,6 +15,8 @@
 */
 module( "game_ready", package.seeall )
 
+local logger = GPM.Logger( "Game Ready" )
+
 local Ready = false
 function isReady()
     return Ready == true
@@ -32,17 +34,19 @@ do
 
         -- Don't touch!
         function ready()
+            logger:info( "Startup..." )
             hook.Run( "PreGameReady" )
             Ready = true
 
             for num, tbl in pairs( waitingFuncs ) do
-                local callback = tbl[1]
-                if isfunction( callback ) then
-                    callback( unpack( tbl[2] ) )
+                local ok, err = pcall( tbl[1], unpack( tbl[2] ) )
+                if (ok == false) then
+                    logger:error( "On startup: {1}", err )
                 end
             end
 
             hook.Run( "OnGameReady" )
+            logger:info( "Game is ready!" )
         end
 
     end
@@ -77,6 +81,7 @@ if (CLIENT) then
             ply.Initialized = true
             ready()
 
+            logger:info( "{1} initialized", tostring( ply ) )
             hook.Run( "PlayerInitialized", ply )
         end
     end)
@@ -101,6 +106,7 @@ if (SERVER) then
             if (self == ply) and not cmd:IsForced() then
                 hook.Remove( "SetupMove", self )
                 self.Initialized = true
+                logger:info( "{1} initialized", tostring( ply ) )
                 hook.Run( "PlayerInitialized", self )
             end
         end)
