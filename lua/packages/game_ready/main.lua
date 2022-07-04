@@ -106,7 +106,7 @@ if (SERVER) then
             if (self == ply) and not cmd:IsForced() then
                 hook.Remove( "SetupMove", self )
                 self.Initialized = true
-                logger:info( "{1} initialized", tostring( ply ) )
+                logger:info( "Player {1} ({2}) is fully initialized.", self:Nick(), self:IsBot() and "BOT" or self:SteamID() )
                 hook.Run( "PlayerInitialized", self )
             end
         end)
